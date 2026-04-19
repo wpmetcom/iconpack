@@ -5,10 +5,13 @@ A dev tool for generating ElementsKit icon pack files from IcoMoon source. Not r
 
 ## Workflow
 
-### 1. Update SVG and Fonts folder from IcoMoon downloaded zip folde, 
-### 2. Update the  latest selection.json file from IcoMoon downloaded zip folder
+### 1. Place the two IcoMoon zip files into the `Icomoon/` folder
+- `elementskit-v*.zip` — contains `fonts/` (woff, svg)
+- `icomoon*.zip` — contains `SVG/` folder
 
-### 3. Push changes to this repository so the latest icons are saved.
+The script will extract them automatically.
+
+### 2. Push changes to this repository so the latest icons are saved.
 
 ```bash
 git add .
