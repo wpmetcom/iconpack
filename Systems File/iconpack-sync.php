@@ -40,20 +40,11 @@ function fail( string $msg ) { cli_line( '✖', '31', $msg ); exit(1); } // red
 // ─── Banner ───────────────────────────────────────────────────────────────────
 if ( $ansi ) {
 	fwrite( STDOUT, "\033[1;33m\n  ╔══════════════════════════════════════════╗\n  ║  ⚡  ElementsKit Icon Pack Generator     ║\n  ╚══════════════════════════════════════════╝\033[0m\n" );
-	fwrite( STDOUT, "\n  \033[1;33m[1]\033[0m  Enter plugin path\n  \033[1;33m[2]\033[0m  I'm already in the plugin dir, just continue\n\n  \033[1;33m»\033[0m  Choose 1 or 2: " );
 } else {
-	fwrite( STDOUT, "\n  +--------------------------------------------+\n  |  ⚡  ElementsKit Icon Pack Generator  |\n  +--------------------------------------------+\n\n  [1]  Enter plugin path\n  [2]  I'm already in the plugin dir, just continue\n\n  »  Choose 1 or 2: " );
+	fwrite( STDOUT, "\n  +--------------------------------------------+\n  |  ⚡  ElementsKit Icon Pack Generator  |\n  +--------------------------------------------+\n" );
 }
 
-$choice = trim( fgets( STDIN ) );
-if ( $choice === '2' ) {
-	$plugin_dir = dirname( dirname( __DIR__ ) );
-} elseif ( $choice === '1' ) {
-	fwrite( STDOUT, "  \033[1;33m»\033[0m  Enter plugin path: " );
-	$plugin_dir = rtrim( trim( fgets( STDIN ) ), "/\\" );
-} else {
-	fail( 'Invalid choice. Please enter 1 or 2.' );
-}
+$plugin_dir = dirname( dirname( __DIR__ ) );
 
 if ( ! is_dir( $plugin_dir ) ) {
 	fail( "Directory not found: $plugin_dir" );
