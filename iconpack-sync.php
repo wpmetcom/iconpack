@@ -12,11 +12,14 @@
  *   Fonts & Svg/SVG/                   – individual SVG files → icons.json
  *
  * Output:
- *   widgets/init/assets/
- *     css/editor.css          – font-face + .ekit-* classes (widget panel icons)
  *   modules/elementskit-icon-pack/assets/
+ *     fonts/elementskit.woff  – icon-pack web font
  *     sass/ekiticons.scss     – font-face + .icon-* classes (compiled to css by Grunt)
+ *     js/ekiticons.json       – { "icons": [...] }  (Elementor fetchJson)
  *     json/icons.json         – { "icon-name": { viewBox, paths } }  (SVG map)
+ *   widgets/init/assets/
+ *     fonts/elementskit.woff  – widget panel web font (same file)
+ *     css/editor.css          – font-face + .ekit-* classes (widget panel icons)
  */
 
 // ─── ANSI helpers ────────────────────────────────────────────────────────────
@@ -48,45 +51,8 @@ if ( ! is_dir( $plugin_dir ) ) {
 }
 
 define( 'ICOMOON',        __DIR__ );
-
-// ─── 0. Extract zips from Icomoon/ folder ────────────────────────────────────
-
-$icomoon_dir = __DIR__ . '/Icomoon';
-$assets_dir  = __DIR__ . '/build';
-
-if ( is_dir( $icomoon_dir ) ) {
-	$zips = glob( $icomoon_dir . '/*.zip' );
-	if ( ! empty( $zips ) ) {
-		info( 'Extracting zips from Icomoon/ ...' );
-		foreach ( $zips as $zip_path ) {
-			$zip = new ZipArchive;
-			if ( $zip->open( $zip_path ) !== true ) {
-				warn( 'Could not open: ' . basename( $zip_path ) );
-				continue;
-			}
-			$has_fonts = false;
-			$has_svg   = false;
-			for ( $i = 0; $i < $zip->numFiles; $i++ ) {
-				$name = $zip->getNameIndex( $i );
-				if ( strpos( $name, 'fonts/' ) === 0 ) { $has_fonts = true; }
-				if ( strpos( $name, 'SVG/' ) === 0 )   { $has_svg   = true; }
-			}
-			for ( $i = 0; $i < $zip->numFiles; $i++ ) {
-				$name = $zip->getNameIndex( $i );
-				if ( ( $has_fonts && strpos( $name, 'fonts/' ) === 0 ) || ( $has_svg && strpos( $name, 'SVG/' ) === 0 ) || $name === 'selection.json' ) {
-					$dest = $assets_dir . '/' . $name;
-					if ( ! is_dir( dirname( $dest ) ) ) { mkdir( dirname( $dest ), 0755, true ); }
-					if ( ! is_dir( $dest ) && substr( $name, -1 ) !== '/' ) { file_put_contents( $dest, $zip->getFromIndex( $i ) ); }
-				}
-			}
-			$zip->close();
-			ok( 'Extracted: ' . basename( $zip_path ) . ( $has_fonts ? ' (fonts/)' : ' (SVG/)' ) );
-		}
-		fwrite( STDOUT, "\n" );
-	}
-}
-define( 'ICOMOON_ASSETS', __DIR__ . '/build' );
-define( 'ICOMOON_SYSTEM', __DIR__ . '/src/Systems File' );
+define( 'ICOMOON_ASSETS', __DIR__ . '/Fonts & Svg' );
+define( 'ICOMOON_SYSTEM', __DIR__ . '/Systems File' );
 define( 'PLUGIN_DIR',     $plugin_dir );
 define( 'ICON_PACK',      PLUGIN_DIR . '/modules/elementskit-icon-pack/assets' );
 define( 'WIDGET_ASSETS',  PLUGIN_DIR . '/widgets/init/assets' );
@@ -157,17 +123,33 @@ fwrite( STDOUT, "\n" );
 ok( 'Widget panel glyphs (ekit-*) from ' . $widget_source . ': ' . count( $widget_glyphs ) );
 fwrite( STDOUT, "\n" );
 
+// ─── 2. Copy woff font ────────────────────────────────────────────────────────
+
+$woff_src  = ICOMOON_ASSETS . '/fonts/elementskit.woff';
+$woff_dest = ICON_PACK . '/fonts/elementskit.woff';
+$dir       = dirname( $woff_dest );
+if ( ! is_dir( $dir ) ) {
+	mkdir( $dir, 0755, true );
+}
+if ( copy( $woff_src, $woff_dest ) ) {
+	ok( "Font copied  → $woff_dest" );
+} else {
+	warn( "Could not copy woff to $woff_dest" );
+}
+fwrite( STDOUT, "\n" );
+
 // ─── 3. Regenerate ekiticons.scss (compiled to css by Grunt/build) ───────────
 
 $scss_header = <<<'SCSS'
 // Custom selected icons for elementskit
 
 $ekit-font-family:   "elementskit" !default;
+$ekit-font-path:     "../fonts" !default;
 $ekit-font-version:  "itek3h" !default;
 
 @font-face {
 	font-family: $ekit-font-family;
-	src: url("../../../../widgets/init/assets/fonts/elementskit.woff?#{$ekit-font-version}") format("woff");
+	src: url("#{$ekit-font-path}/elementskit.woff?#{$ekit-font-version}") format("woff");
 	font-weight: normal;
 	font-style: normal;
 	font-display: swap;
@@ -215,7 +197,19 @@ file_put_contents( $scss_path, $scss_header . $scss_rules );
 ok( 'Regenerated ekiticons.scss  → run `npm run dev` or `grunt css` to compile to CSS' );
 fwrite( STDOUT, "\n" );
 
-// ─── 4. Regenerate icons.json  { "icon-name": { viewBox, paths } }  (SVG map) ─
+// ─── 4. Regenerate ekiticons.json  { "icons": [...] }  (Elementor fetchJson) ──
+
+$icon_names = array_column( $icon_pack_glyphs, 'name' );
+$ekit_json     = ICON_PACK . '/js/ekiticons.json';
+$dir           = dirname( $ekit_json );
+if ( ! is_dir( $dir ) ) {
+	mkdir( $dir, 0755, true );
+}
+file_put_contents( $ekit_json, json_encode( [ 'icons' => $icon_names ], JSON_UNESCAPED_SLASHES ) );
+ok( 'Regenerated ekiticons.json (' . count( $icon_names ) . ' icons)' );
+fwrite( STDOUT, "\n" );
+
+// ─── 5. Regenerate icons.json  { "icon-name": { viewBox, paths } }  (SVG map) ─
 
 require_once ICOMOON_SYSTEM . '/svg-to-icon-json.php';
 
@@ -229,7 +223,20 @@ file_put_contents( $icons_json, json_encode( $svg_icons, JSON_UNESCAPED_SLASHES 
 ok( 'Regenerated icons.json (' . count( $svg_icons ) . ' SVG icons)' );
 fwrite( STDOUT, "\n" );
 
-// ─── 5. Regenerate editor.css ────────────────────────────────────────────────
+// ─── 6. Copy widget font + regenerate editor.css from ekit-* glyphs ──────────
+
+// The widget panel font is the same elementskit.woff — just copied to widgets/
+$widget_woff_dest = WIDGET_ASSETS . '/fonts/elementskit.woff';
+$dir              = dirname( $widget_woff_dest );
+if ( ! is_dir( $dir ) ) {
+	mkdir( $dir, 0755, true );
+}
+if ( copy( ICOMOON_ASSETS . '/fonts/elementskit.woff', $widget_woff_dest ) ) {
+	ok( "Widget font copied → $widget_woff_dest" );
+} else {
+	warn( "Could not copy widget woff to $widget_woff_dest" );
+}
+fwrite( STDOUT, "\n" );
 
 // Filter already done in step 1 — $widget_glyphs contains ekit-* only
 

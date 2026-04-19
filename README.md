@@ -5,16 +5,14 @@ A dev tool for generating ElementsKit icon pack files from IcoMoon source. Not r
 
 ## Workflow
 
-### 1. Place the two IcoMoon zip files into the `Icomoon/` folder
-- `elementskit-v*.zip` — contains `fonts/` (woff, svg)
-- `icomoon*.zip` — contains `SVG/` folder
+### 1. Update SVG and Fonts folder from IcoMoon downloaded zip folde, 
+### 2. Update the  latest selection.json file from IcoMoon downloaded zip folder
 
-
-### 2. Push changes to this repository so the latest icons are saved.
+### 3. Push changes to this repository so the latest icons are saved.
 
 ```bash
 git add .
-git commit -m "updated elementskit iconpack"
+git commit -m "added elementor icon"
 git push
 ```
 
@@ -30,4 +28,4 @@ npm run load-iconpack
 npm run iconpack
 ```
 
-![ElementsKit Iconpack Generator](./src/iconpack.png)
+![ElementsKit Iconpack Generator](./iconpack.png)
