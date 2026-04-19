@@ -44,15 +44,15 @@ if ( $ansi ) {
 	fwrite( STDOUT, "\n  +--------------------------------------------+\n  |  ⚡  ElementsKit Icon Pack Generator  |\n  +--------------------------------------------+\n" );
 }
 
-$plugin_dir = dirname( dirname( __DIR__ ) );
+$plugin_dir = dirname( __DIR__ );
 
 if ( ! is_dir( $plugin_dir ) ) {
 	fail( "Directory not found: $plugin_dir" );
 }
 
-define( 'ICOMOON',        dirname( __DIR__ ) );
-define( 'ICOMOON_ASSETS', ICOMOON . '/Fonts & Svg' );
-define( 'ICOMOON_SYSTEM', ICOMOON . '/Systems File' );
+define( 'ICOMOON',        __DIR__ );
+define( 'ICOMOON_ASSETS', __DIR__ . '/Fonts & Svg' );
+define( 'ICOMOON_SYSTEM', __DIR__ . '/Systems File' );
 define( 'PLUGIN_DIR',     $plugin_dir );
 define( 'ICON_PACK',      PLUGIN_DIR . '/modules/elementskit-icon-pack/assets' );
 define( 'WIDGET_ASSETS',  PLUGIN_DIR . '/widgets/init/assets' );
