@@ -289,6 +289,13 @@ fwrite( STDOUT, "\n" );
 
 
 // ─── 6. Regenerate editor.css from ekit-* glyphs ───────────────────────────
+/**
+ * wp_enqueue_style( 'elementskit-panel', \ElementsKit_Lite::widget_url() . 'init/assets/css/editor.css', [], \ElementsKit_Lite::version() );
+ * This loads it in the Elementor editor panel (the left sidebar where you pick widgets). Its purpose there is to render the small widget icon next to each ElementsKit widget name in the panel — that's why it only needs the ekit-* glyphs from get_icon(), not the full icon pack.
+ * Each widget tells Elementor which icon to show via public function get_icon()
+ * The editor.css contains the CSS that maps ekit-accordion to the actual icon character from the font file.
+ * The script scans every widget's handler file, finds get_icon(), reads whatever class it returns, and only those classes end up in editor.css
+ */
 
 if ( empty( $icon_pack_glyphs ) ) {
 	warn( 'No glyphs found in elementskit.svg — check the font file.' );
