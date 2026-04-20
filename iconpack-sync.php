@@ -60,6 +60,10 @@ define( 'WIDGET_ASSETS',  PLUGIN_DIR . '/widgets/init/assets' );
 $icomoon_zip_dir = __DIR__ . '/src/Icomoon';
 if ( is_dir( $icomoon_zip_dir ) ) {
 	$zips = glob( $icomoon_zip_dir . '/*.zip' );
+	if ( count( $zips ) < 2 ) {
+		fail( 'Please upload 2 zip files from IcoMoon into src/Icomoon/ before running this script.' );
+	}
+
 	if ( ! empty( $zips ) ) {
 		info( 'Extracting zips from Icomoon/ ...' );
 		foreach ( $zips as $zip_path ) {
