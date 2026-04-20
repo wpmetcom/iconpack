@@ -1,24 +1,21 @@
 <?php
 /**
  * ElementsKit Icon Pack Sync Script
- * Run via CLI: php iconpack-sync.php
+ * Run via CLI: npm run load-iconpack & npm run iconpack
  * Regenerates all icon pack files from icomoon source.
- *
- * Source dir  : Elementskit Iconpack Generator v2/Systems File/  ← __DIR__
- *   Fonts & Svg/fonts/elementskit.svg  – ALL glyph definitions
- *     · non-ekit-* glyphs → ekiticons.scss / icons.json
- *     · ekit-* glyphs     → editor.css (widget panel icons, parsed directly from SVG)
- *   Fonts & Svg/fonts/elementskit.woff – web font (shared)
- *   Fonts & Svg/SVG/                   – individual SVG files → icons.json
- *
- * Output:
- *   modules/elementskit-icon-pack/assets/
- *     fonts/elementskit.woff  – icon-pack web font
- *     sass/ekiticons.scss     – font-face + .icon-* classes (compiled to css by Grunt)
- *     json/icons.json         – { "icon-name": { viewBox, paths } }  (SVG map)
- *   widgets/init/assets/
- *     css/editor.css          – font-face + .ekit-* classes (widget panel icons)
+ * Iconpack generator source : https://github.com/wpmetcom/iconpack
+ * 6 Steps:
+	* 1. Extract zips from src/Icomoon/ (uploaded by user from IcoMoon app)
+	* 2. Parse all glyphs from elementskit.svg (IcoMoon font file)
+	* 3. Copy woff font to icon-pack assets
+	* 4. Regenerate ekiticons.scss (compiled to css by Grunt/build)
+	* 5. Regenerate icons.json { "icon-name": { viewBox, paths }
+	* 6. Regenerate editor.css from ekit-* glyphs (widget icons in panel)
+ * 
  */
+
+
+
 
 // ─── ANSI helpers ────────────────────────────────────────────────────────────
 $ansi = stream_isatty( STDOUT );
@@ -55,8 +52,15 @@ define( 'PLUGIN_DIR',     $plugin_dir );
 define( 'ICON_PACK',      PLUGIN_DIR . '/modules/elementskit-icon-pack/assets' );
 define( 'WIDGET_ASSETS',  PLUGIN_DIR . '/widgets/init/assets' );
 
-// ─── 0. Extract zips from Icomoon/ folder ────────────────────────────────────
 
+
+
+
+
+
+
+
+// ─── 0. Extract zips from Icomoon/ folder ────────────────────────────────────
 $icomoon_zip_dir = __DIR__ . '/src/Icomoon';
 if ( is_dir( $icomoon_zip_dir ) ) {
 	$zips = glob( $icomoon_zip_dir . '/*.zip' );
@@ -94,8 +98,15 @@ if ( is_dir( $icomoon_zip_dir ) ) {
 	}
 }
 
-// ─── 1. Parse all glyphs from elementskit.svg ────────────────────────────────
 
+
+
+
+
+
+
+
+// ─── 1. Parse all glyphs from elementskit.svg ────────────────────────────────
 $svg = simplexml_load_file( ICOMOON_ASSETS . '/fonts/elementskit.svg' );
 if ( ! $svg ) {
 	fail( 'Cannot read icomoon/Fonts & Svg/fonts/elementskit.svg' );
@@ -160,8 +171,17 @@ fwrite( STDOUT, "\n" );
 ok( 'Widget panel glyphs (ekit-*) from ' . $widget_source . ': ' . count( $widget_glyphs ) );
 fwrite( STDOUT, "\n" );
 
-// ─── 2. Copy woff font ────────────────────────────────────────────────────────
 
+
+
+
+
+
+
+
+
+
+// ─── 2. Copy woff font ────────────────────────────────────────────────────────
 $woff_src  = ICOMOON_ASSETS . '/fonts/elementskit.woff';
 $woff_dest = ICON_PACK . '/fonts/elementskit.woff';
 $dir       = dirname( $woff_dest );
@@ -175,8 +195,17 @@ if ( copy( $woff_src, $woff_dest ) ) {
 }
 fwrite( STDOUT, "\n" );
 
-// ─── 3. Regenerate ekiticons.scss (compiled to css by Grunt/build) ───────────
 
+
+
+
+
+
+
+
+
+
+// ─── 3. Regenerate ekiticons.scss (compiled to css by Grunt/build) ───────────
 $scss_header = <<<'SCSS'
 // Custom selected icons for elementskit
 
@@ -234,10 +263,16 @@ file_put_contents( $scss_path, $scss_header . $scss_rules );
 ok( 'Regenerated ekiticons.scss  → run `npm run dev` or `grunt css` to compile to CSS' );
 fwrite( STDOUT, "\n" );
 
+
+
+
+
+
+
+
+
 // ─── 5. Regenerate icons.json  { "icon-name": { viewBox, paths } }  (SVG map) ─
-
 require_once ICOMOON_SYSTEM . '/svg-to-icon-json.php';
-
 $svg_icons  = svg_dir_to_icon_array( ICOMOON_ASSETS . '/SVG' );
 $icons_json = ICON_PACK . '/json/icons.json';
 $dir        = dirname( $icons_json );
@@ -248,9 +283,12 @@ file_put_contents( $icons_json, json_encode( $svg_icons, JSON_UNESCAPED_SLASHES 
 ok( 'Regenerated icons.json (' . count( $svg_icons ) . ' SVG icons)' );
 fwrite( STDOUT, "\n" );
 
-// ─── 6. Regenerate editor.css from ekit-* glyphs ───────────────────────────
 
-// Filter already done in step 1 — $widget_glyphs contains ekit-* only
+
+
+
+
+// ─── 6. Regenerate editor.css from ekit-* glyphs ───────────────────────────
 
 if ( empty( $icon_pack_glyphs ) ) {
 	warn( 'No glyphs found in elementskit.svg — check the font file.' );
@@ -266,7 +304,7 @@ if ( empty( $icon_pack_glyphs ) ) {
 	// ── DYNAMIC: font-face + icon classes (generated from SVG glyphs) ──
 	$css  = '/* elementskit widget icons for panel */' . "\r\n";
 	$css .= '@font-face{font-family:elementskit;';
-	$css .= "src:url(../../../modules/elementskit-icon-pack/assets/fonts/elementskit.woff?{$font_ver}) format('woff');";
+	$css .= "src:url(../../../../modules/elementskit-icon-pack/assets/fonts/elementskit.woff?{$font_ver}) format('woff');";
 	$css .= 'font-weight:400;font-style:normal}';
 	$css .= '.ekit{font-family:elementskit!important;speak:none;font-style:normal;font-weight:400;font-variant:normal;text-transform:none;line-height:1;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}';
 
