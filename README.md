@@ -1,31 +1,71 @@
 # ElementsKit Iconpack Generator
-A dev tool for generating ElementsKit icon pack files from IcoMoon source. Not required for the plugin to run — only needed when adding or removing icons.
+A dev tool for syncing the ElementsKit icon pack from IcoMoon source. Not required for the plugin to run — only needed when adding or removing icons.
+
+---
+
+## Folder Structure
+
+```
+iconpack/
+├── src/
+│   ├── Fonts & Svg/
+│   │   ├── fonts/          ← elementskit.svg, .woff, .ttf (source font files)
+│   │   └── SVG/            ← individual SVG files (one per icon)
+│   ├── Icomoon/            ← drop new IcoMoon .zip exports here
+│   ├── Systems File/       ← internal scripts (svg-to-icon-json.php, editor-static.css)
+│   ├── selection.json      ← IcoMoon project file
+│   └── iconpack.png
+├── iconpack-sync.php       ← main sync script
+└── README.md
+```
 
 ---
 
 ## Workflow
 
-### 1. Update SVG and Fonts folder from IcoMoon downloaded zip folde, 
-### 2. Update the  latest selection.json file from IcoMoon downloaded zip folder
+### Option A — Drop a zip (recommended)
 
-### 3. Push changes to this repository so the latest icons are saved.
+1. Export from [IcoMoon](https://icomoon.io/app/) and drop the `.zip` into `src/Icomoon/`.
+2. Run from the plugin root:
 
 ```bash
-git add .
-git commit -m "added elementor icon"
-git push
+npm run iconpack
 ```
 
-### 4. Load the repository into the plugin
-From the **ElementsKit Lite plugin root**, run:
+The script auto-extracts `fonts/` and `SVG/` from the zip, then regenerates all output files.
+
+---
+
+
+
+## What the sync script generates
+
+| Output file | Description |
+|---|---|
+| `modules/elementskit-icon-pack/assets/fonts/elementskit.woff` | Web font copied from source |
+| `modules/elementskit-icon-pack/assets/sass/ekiticons.scss` | Font-face + `.icon-*` classes (compile with Grunt) |
+| `modules/elementskit-icon-pack/assets/json/icons.json` | SVG map `{ "icon-name": { viewBox, paths } }` |
+| `widgets/init/assets/css/editor.css` | Font-face + `.ekit-*` widget panel icon classes |
+
+After syncing, compile the SCSS:
+
+```bash
+npm run dev
+```
+
+---
+
+## First-time setup
+
+If the `iconpack/` folder doesn't exist yet, clone it first:
 
 ```bash
 npm run load-iconpack
 ```
 
-### 5. Generate the icon pack
-```bash
-npm run iconpack
-```
+This clones `https://github.com/wpmetcom/iconpack.git` into the `iconpack/` directory.
 
-![ElementsKit Iconpack Generator](./iconpack.png)
+---
+
+
+![ElementsKit Iconpack Generator](./src/iconpack.png)
