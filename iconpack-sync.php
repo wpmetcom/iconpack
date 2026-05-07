@@ -5,12 +5,11 @@
  * Regenerates all icon pack files from icomoon source.
  * Iconpack generator source : https://github.com/wpmetcom/iconpack
  * 6 Steps:
-	* 1. Extract zips from src/Icomoon/ (uploaded by user from IcoMoon app)
-	* 2. Parse all glyphs from elementskit.svg (IcoMoon font file)
-	* 3. Copy woff font to icon-pack assets
-	* 4. Regenerate ekiticons.scss (compiled to css by Grunt/build)
-	* 5. Regenerate icons.json { "icon-name": { viewBox, paths }
-	* 6. Regenerate editor.css from ekit-* glyphs (widget icons in panel)
+	* 1. Parse all glyphs from elementskit.svg (IcoMoon font file)
+	* 2. Copy woff font to icon-pack assets
+	* 3. Regenerate ekiticons.scss (compiled to css by Grunt/build)
+	* 4. Regenerate icons.json { "icon-name": { viewBox, paths }
+	* 5. Regenerate editor.css from ekit-* glyphs (widget icons in panel)
  * 
  */
 
@@ -56,56 +55,6 @@ define( 'WIDGET_INIT_ASSETS_DIR',    ELEMENTSKIT_PLUGIN_DIR . '/widgets/init/ass
 
 
 
-
-
-
-
-// ─── 0. Extract zips from Icomoon/ folder ────────────────────────────────────
-$icomoon_uploads_dir = __DIR__ . '/src/Icomoon';
-if ( is_dir( $icomoon_uploads_dir ) ) {
-	$icomoon_zip_files = glob( $icomoon_uploads_dir . '/*.zip' );
-	if ( count( $icomoon_zip_files ) < 2 ) {
-		fail( 'Please upload 2 zip files from IcoMoon into src/Icomoon/ before running this script.' );
-	}
-
-	if ( ! empty( $icomoon_zip_files ) ) {
-		info( 'Extracting zips from Icomoon/ ...' );
-		foreach ( $icomoon_zip_files as $zip_file_path ) {
-			$zip = new ZipArchive;
-			if ( $zip->open( $zip_file_path ) !== true ) {
-				warn( 'Could not open: ' . basename( $zip_file_path ) );
-				continue;
-			}
-			$zip_has_fonts_folder = false;
-			$zip_has_svg_folder   = false;
-			for ( $i = 0; $i < $zip->numFiles; $i++ ) {
-				$zip_entry_name = $zip->getNameIndex( $i );
-				if ( strpos( $zip_entry_name, 'fonts/' ) === 0 ) { $zip_has_fonts_folder = true; }
-				if ( strpos( $zip_entry_name, 'SVG/' ) === 0 )   { $zip_has_svg_folder   = true; }
-			}
-			for ( $i = 0; $i < $zip->numFiles; $i++ ) {
-				$zip_entry_name = $zip->getNameIndex( $i );
-				if ( ( $zip_has_fonts_folder && strpos( $zip_entry_name, 'fonts/' ) === 0 ) || ( $zip_has_svg_folder && strpos( $zip_entry_name, 'SVG/' ) === 0 ) ) {
-					$dest = ICOMOON_FONTS_AND_SVG_DIR . '/' . $zip_entry_name;
-					if ( ! is_dir( dirname( $dest ) ) ) { mkdir( dirname( $dest ), 0755, true ); }
-					if ( substr( $zip_entry_name, -1 ) !== '/' ) { file_put_contents( $dest, $zip->getFromIndex( $i ) ); }
-				}
-			}
-			$zip->close();
-			ok( 'Extracted: ' . basename( $zip_file_path ) . ( $zip_has_fonts_folder ? ' (fonts/)' : '' ) . ( $zip_has_svg_folder ? ' (SVG/)' : '' ) );
-		}
-		fwrite( STDOUT, "\n" );
-	}
-}
-
-
-
-
-
-
-
-
-
 // ─── 1. Parse all glyphs from elementskit.svg ────────────────────────────────
 $svg = simplexml_load_file( ICOMOON_FONTS_AND_SVG_DIR . '/fonts/elementskit.svg' );
 if ( ! $svg ) {
@@ -130,6 +79,8 @@ foreach ( $svg->defs->font->glyph as $glyph ) {
 
 	$all_icon_glyphs[] = [ 'name' => $glyph_name, 'hex' => implode( '', $unicode_codepoints ) ];
 }
+
+
 
 // ─── 1b. widget_panel_glyphs — scan lite + pro handler PHP files for ekit-* icon classes ───
 $widget_panel_glyphs       = [];
@@ -173,14 +124,6 @@ fwrite( STDOUT, "\n" );
 
 
 
-
-
-
-
-
-
-
-
 // ─── 2. Copy woff font ────────────────────────────────────────────────────────
 $woff_source_path      = ICOMOON_FONTS_AND_SVG_DIR . '/fonts/elementskit.woff';
 $woff_destination_path = ICON_PACK_ASSETS_DIR . '/fonts/elementskit.woff';
@@ -194,14 +137,6 @@ if ( copy( $woff_source_path, $woff_destination_path ) ) {
 	warn( "Could not copy woff to $woff_destination_path" );
 }
 fwrite( STDOUT, "\n" );
-
-
-
-
-
-
-
-
 
 
 
@@ -265,12 +200,6 @@ fwrite( STDOUT, "\n" );
 
 
 
-
-
-
-
-
-
 // ─── 5. Regenerate icons.json  { "icon-name": { viewBox, paths } }  (SVG map) ─
 require_once ICOMOON_SYSTEM_FILES_DIR . '/svg-to-icon-json.php';
 $svg_icon_map    = svg_dir_to_icon_array( ICOMOON_FONTS_AND_SVG_DIR . '/SVG' );
@@ -282,9 +211,6 @@ if ( ! is_dir( $target_dir ) ) {
 file_put_contents( $icons_json_path, json_encode( $svg_icon_map, JSON_UNESCAPED_SLASHES ) );
 ok( 'Regenerated icons.json (' . count( $svg_icon_map ) . ' SVG icons)' );
 fwrite( STDOUT, "\n" );
-
-
-
 
 
 
